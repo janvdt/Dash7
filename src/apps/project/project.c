@@ -211,5 +211,6 @@ void bootstrap()
     timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
     lcd_write_string("EFM32 Sensor\n");
+    lcd_write_string("Dit is een test\n");
 }
 
