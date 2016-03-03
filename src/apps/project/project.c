@@ -31,6 +31,7 @@
 #include "d7ap_stack.h"
 #include "fs.h"
 #include "log.h"
+#include "extsensor.h"
 
 #if (!defined PLATFORM_EFM32GG_STK3700 && !defined PLATFORM_EFM32HG_STK3400 && !defined PLATFORM_EZR32LG_WSTK6200A)
 	#error Mismatch between the configured platform and the actual platform.
@@ -81,6 +82,10 @@ void execute_sensor_measurement()
   lcd_write_string("Int T: %2d.%d C\n", (int)internal_temp, (int)(internal_temp*10)%10);
   log_print_string("Int T: %2d.%d C\n", (int)internal_temp, (int)(internal_temp*10)%10);
 
+  float external_temp = get_external_temperature();
+  lcd_write_string("Ext s T: %2d.%d C\n", (int)external_temp, (int)(external_temp*10)%10);
+  log_print_string("Ext s T: %2d.%d C\n", (int)external_temp, (int)(external_temp*10)%10);
+
   uint32_t rhData;
   uint32_t tData;
   getHumidityAndTemperature(&rhData, &tData);
@@ -101,6 +106,7 @@ void execute_sensor_measurement()
   uint8_t sensor_values[8];
   uint16_t *pointer =  (uint16_t*) sensor_values;
   *pointer++ = (uint16_t) (internal_temp * 10);
+  *pointer++ = (uint16_t) (external_temp * 10);
   *pointer++ = (uint16_t) (tData /100);
   *pointer++ = (uint16_t) (rhData /100);
   *pointer++ = (uint16_t) (vdd /10);
