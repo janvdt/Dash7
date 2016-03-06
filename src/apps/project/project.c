@@ -32,6 +32,7 @@
 #include "fs.h"
 #include "log.h"
 #include "extsensor.h"
+#include "hwuart.h"
 
 #if (!defined PLATFORM_EFM32GG_STK3700 && !defined PLATFORM_EFM32HG_STK3400 && !defined PLATFORM_EZR32LG_WSTK6200A)
 	#error Mismatch between the configured platform and the actual platform.
@@ -52,6 +53,8 @@
 uint8_t app_mode_status = 0xFF;
 uint8_t app_mode_status_changed = 0x00;
 uint8_t app_mode = 0;
+
+static uart_handle_t* uart;
 
 
 // Toggle different operational modes
@@ -101,6 +104,7 @@ void execute_sensor_measurement()
   lcd_write_string("Batt %d mV\n", vdd);
   log_print_string("Batt: %d mV\n", vdd);
 
+
   //TODO: put sensor values in array
 
   uint8_t sensor_values[8];
@@ -113,6 +117,15 @@ void execute_sensor_measurement()
 
   fs_write_file(SENSOR_FILE_ID, 0, (uint8_t*)&sensor_values,8);
 #endif
+
+  //test uart
+  uint8_t a[5]={internal_temp,external_temp,tData,rhData,vdd};
+
+  int i=0;
+  for(i=0;i<=7;i++)
+  {
+	  uart_send_byte(uart,a[i]);
+  }
 
   timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 }
@@ -208,12 +221,13 @@ void bootstrap()
     d7ap_stack_init(&fs_init_args, NULL, false);
 
     initSensors();
+    uart = uart_init(1, 115200, 4);
+    uart_enable(uart);
 
     ubutton_register_callback(0, &userbutton_callback);
     ubutton_register_callback(1, &userbutton_callback);
 
     sched_register_task((&execute_sensor_measurement));
-
     timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
     lcd_write_string("EFM32 Sensor\n");
