@@ -16,15 +16,31 @@
  * limitations under the License.
  */
 
+#include "hwsystem.h"
+#include "hwadc.h"
+#include "em_system.h"
+#include "em_emu.h"
+#include "em_cmu.h"
+#include <debug.h>
+#include "hwuart.h"
 
-#include "types.h"
-#include "link_c.h"
-
-/*!
- * /brief Returns the external temperature of the sensor
- */
-__LINK_C float get_external_temperature();
+static uart_handle_t* uart_gps;
+static uart_handle_t* uart_pc;
 
 
+void uart_init_gps()
+{
+	uart_gps = uart_init(1, 9600, 4);
+	uart_enable(uart_gps);
+}
 
+void uart_init_pc()
+{
+	uart_pc = uart_init(0,115200,4);
+	uart_enable(uart_pc);
+}
 
+void uart_receive(uint8_t byte)
+{
+	uart_send_byte(uart_gps,byte);
+}

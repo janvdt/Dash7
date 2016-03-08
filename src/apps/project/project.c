@@ -32,6 +32,7 @@
 #include "fs.h"
 #include "log.h"
 #include "extsensor.h"
+#include "uart.h"
 #include "hwuart.h"
 
 #if (!defined PLATFORM_EFM32GG_STK3700 && !defined PLATFORM_EFM32HG_STK3400 && !defined PLATFORM_EZR32LG_WSTK6200A)
@@ -121,14 +122,10 @@ void execute_sensor_measurement()
   //test uart
   uint8_t a[5]={internal_temp,external_temp,tData,rhData,vdd};
 
-  int i=0;
-  for(i=0;i<=7;i++)
-  {
-	  uart_send_byte(uart,a[i]);
-  }
-
+  uart_set_rx_interrupt_callback(uart,uart_receive);
   timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 }
+
 
 void init_user_files()
 {
@@ -221,8 +218,8 @@ void bootstrap()
     d7ap_stack_init(&fs_init_args, NULL, false);
 
     initSensors();
-    uart = uart_init(1, 115200, 4);
-    uart_enable(uart);
+    uart_init_gps();
+    //uart_init_pc();
 
     ubutton_register_callback(0, &userbutton_callback);
     ubutton_register_callback(1, &userbutton_callback);

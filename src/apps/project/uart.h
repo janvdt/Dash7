@@ -20,11 +20,9 @@
 #include "types.h"
 #include "link_c.h"
 
-/*!
- * /brief Returns the external temperature of the sensor
- */
-__LINK_C float get_external_temperature();
 
+__LINK_C void uart_receive(uint8_t byte);
 
+__LINK_C void uart_init_gps();
 
-
+__LINK_C void uart_init_pc();
