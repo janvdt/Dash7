@@ -27,11 +27,16 @@
 static uart_handle_t* uart_gps;
 static uart_handle_t* uart_pc;
 
-
+void uart_receive(uint8_t byte)
+{
+	uart_send_byte(uart_gps,byte);
+}
 void uart_init_gps()
 {
-	uart_gps = uart_init(1, 9600, 4);
+	uart_gps = uart_init(1, 115200, 4);
 	uart_enable(uart_gps);
+	uart_set_rx_interrupt_callback(uart_gps,uart_receive);
+	uart_rx_interrupt_enable(uart_gps);
 }
 
 void uart_init_pc()
@@ -40,7 +45,4 @@ void uart_init_pc()
 	uart_enable(uart_pc);
 }
 
-void uart_receive(uint8_t byte)
-{
-	uart_send_byte(uart_gps,byte);
-}
+

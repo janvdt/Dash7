@@ -122,7 +122,7 @@ void execute_sensor_measurement()
   //test uart
   uint8_t a[5]={internal_temp,external_temp,tData,rhData,vdd};
 
-  uart_set_rx_interrupt_callback(uart,uart_receive);
+
   timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 }
 
