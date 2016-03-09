@@ -26,6 +26,7 @@
 
 static uart_handle_t* uart_gps;
 static uart_handle_t* uart_pc;
+static uart_handle_t* uart_sigfox;
 
 void uart_receive(uint8_t byte)
 {
@@ -37,6 +38,14 @@ void uart_init_gps()
 	uart_enable(uart_gps);
 	uart_set_rx_interrupt_callback(uart_gps,uart_receive);
 	uart_rx_interrupt_enable(uart_gps);
+}
+
+void uart_init_sigfox()
+{
+	uart_sigfox = uart_init(1, 115200, 4);
+	uart_enable(uart_sigfox);
+	uart_set_rx_interrupt_callback(uart_sigfox,uart_receive);
+	uart_rx_interrupt_enable(uart_sigfox);
 }
 
 void uart_init_pc()

@@ -218,8 +218,9 @@ void bootstrap()
     d7ap_stack_init(&fs_init_args, NULL, false);
 
     initSensors();
-    uart_init_gps();
+    //uart_init_gps();
     //uart_init_pc();
+    uart_init_sigfox();
 
     ubutton_register_callback(0, &userbutton_callback);
     ubutton_register_callback(1, &userbutton_callback);
