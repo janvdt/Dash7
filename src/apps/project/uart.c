@@ -30,7 +30,9 @@ static uart_handle_t* uart_sigfox;
 
 void uart_receive(uint8_t byte)
 {
-	uart_send_byte(uart_gps,byte);
+	//uart_send_byte(uart_sigfox,byte);
+	char* c = &byte;
+	lcd_write_string(c);
 }
 void uart_init_gps()
 {
@@ -42,7 +44,7 @@ void uart_init_gps()
 
 void uart_init_sigfox()
 {
-	uart_sigfox = uart_init(1, 115200, 4);
+	uart_sigfox = uart_init(1, 9600, 4);
 	uart_enable(uart_sigfox);
 	uart_set_rx_interrupt_callback(uart_sigfox,uart_receive);
 	uart_rx_interrupt_enable(uart_sigfox);
