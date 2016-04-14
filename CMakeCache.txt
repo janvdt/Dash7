@@ -290,7 +290,7 @@ HAL_RADIO_USE_HW_CRC:BOOL=OFF
 JLINK_DEVICE:STRING=EFM32HG322F64
 
 //Build Module d7ap
-MODULE_D7AP:BOOL=ON
+MODULE_D7AP:BOOL=OFF
 
 //Enable logging for DLL layer
 MODULE_D7AP_DLL_LOG_ENABLED:BOOL=OFF
@@ -345,7 +345,7 @@ PLATFORM_EFM32HG_STK3400_DEBUGPINS:BOOL=OFF
 PLATFORM_EFM32HG_STK3400_MCU:STRING=EFM32HG322F64
 
 //The radio chip connected to the Gecko board
-PLATFORM_EFM32HG_STK3400_RADIO:STRING=cc1101
+PLATFORM_EFM32HG_STK3400_RADIO:STRING=none
 
 //Path to directory containing extra, out of tree platform implementations
 // (optional)
@@ -423,8 +423,6 @@ CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
 CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 CMAKE_CXX_LINK_EXECUTABLE:INTERNAL='<CMAKE_CXX_COMPILER> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS>  --specs=nano.specs -Wl,-gc-sections  -T/home/jan/Documents/Ambient/Dash7/dash7-ap-open-source-stack/stack/framework/hal/chips/efm32hg/CMSIS/device/linker/efm32hg.ld <OBJECTS> -o <TARGET>  -Wl,--start-group <LINK_LIBRARIES> -lgcc -lc -lnosys -Wl,--end-group '
-//ADVANCED property for variable: CMAKE_C_FLAGS
-CMAKE_C_FLAGS-ADVANCED:INTERNAL=1
 CMAKE_C_FLAGS:INTERNAL= -std=c99 -fno-common   -gdwarf-2 -mcpu=cortex-m0plus -mthumb -fmessage-length=0 -mno-sched-prolog -fno-builtin -ffunction-sections -fdata-sections
 //ADVANCED property for variable: CMAKE_C_FLAGS_DEBUG
 CMAKE_C_FLAGS_DEBUG-ADVANCED:INTERNAL=1
