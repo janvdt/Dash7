@@ -27,6 +27,7 @@
 //#include "fs.h"
 #include "log.h"
 #include "sensor/extsensor.h"
+#include "acc/acc.h"
 #include "lora/lora.h"
 #include "gps/gps.h"
 #include "hwuart.h"
@@ -100,7 +101,8 @@ static void CbTxIndication(TRadioMsg* txMsg, TRadioFlags txFlags)
 void execute_sensor_measurement()
 {
 	//clear_fifo_gps();
-	get_flow_meter_value();
+	//get_flow_meter_value();
+	accelero_read();
 	timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 }
 
@@ -113,7 +115,8 @@ void bootstrap()
     // Register callback functions for receive / send
     iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
     //uart_init_lora();
-    init_flow_meter();
+    //init_flow_meter();
+    init_accelero();
 
     hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
     hw_gpio_set(C0);

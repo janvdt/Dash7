@@ -26,19 +26,7 @@
 #include "em_gpio.h"
 #include <debug.h>
 
-// Factory calibration temperature (from device information page)
-#define CAL_TEMP_0 (float)((DEVINFO->CAL & _DEVINFO_CAL_TEMP_MASK) >> _DEVINFO_CAL_TEMP_SHIFT)
-
-// Factory ADC readout at CAL_TEMP_0 temperature (from device information page)
-#define ADC_TEMP_0_READ_1V25 (float)((DEVINFO->ADC0CAL2 & _DEVINFO_ADC0CAL2_TEMP1V25_MASK) >> _DEVINFO_ADC0CAL2_TEMP1V25_SHIFT)
-
-// temperature gradient (from datasheet)
-#define T_GRAD -4.5f
-
 uint8_t flow_frequency;
-
-/** Flag used to indicate ADC is finished */
-static volatile bool adcConversionComplete = false;
 
 void counter_flow()
 {
