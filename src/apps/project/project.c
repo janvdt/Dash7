@@ -100,6 +100,7 @@ static void CbTxIndication(TRadioMsg* txMsg, TRadioFlags txFlags)
 void execute_sensor_measurement()
 {
 	//clear_fifo_gps();
+	get_flow_meter_value();
 	timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 }
 
@@ -107,14 +108,15 @@ void bootstrap()
 {
 
     //initSensors();
-    uart_init_gps();
-    iM880A_Init();
+    //uart_init_gps();
+    //iM880A_Init();
     // Register callback functions for receive / send
     iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
     //uart_init_lora();
+    init_flow_meter();
 
-    //hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
-    //hw_gpio_set(C0);
+    hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
+    hw_gpio_set(C0);
 
     ubutton_register_callback(0, &userbutton_callback);
     ubutton_register_callback(1, &userbutton_callback);
