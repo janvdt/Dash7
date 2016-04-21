@@ -28,12 +28,14 @@ static uart_handle_t* uart_gps;
 static uart_handle_t* uart_pc;
 static uart_handle_t* uart_sigfox;
 
-void uart_receive(uint8_t byte)
+
+void uart_receive_putty(uint8_t byte)
 {
-	//uart_send_byte(uart_sigfox,byte);
-	char* c = &byte;
-	lcd_write_string(c);
+	//char* c = byte;
+	//lcd_write_string(c);
+	lcd_write_string("Data received!\n");
 }
+
 void uart_init_gps()
 {
 	uart_gps = uart_init(1, 115200, 4);
