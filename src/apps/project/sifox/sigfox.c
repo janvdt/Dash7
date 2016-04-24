@@ -1,5 +1,5 @@
 /*
-Sigfox
+Sigfox Lib
 */
 #include "scheduler.h"
 #include "timer.h"
@@ -8,6 +8,7 @@ Sigfox
 #include "hwlcd.h"
 #include "hwadc.h"
 
+#include sigfox.h
 #include "extsensor.h"
 #include "uart.h"
 #include "hwuart.h"
