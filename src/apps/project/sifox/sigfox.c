@@ -8,7 +8,7 @@ Sigfox Lib
 #include "hwlcd.h"
 #include "hwadc.h"
 
-#include sigfox.h
+#include "sigfox.h"
 #include "extsensor.h"
 #include "uart.h"
 #include "hwuart.h"
