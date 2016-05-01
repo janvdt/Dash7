@@ -1,19 +1,5 @@
-/* * OSS-7 - An opensource implementation of the DASH7 Alliance Protocol for ultra
- * lowpower wireless sensor communication
- *
- * Copyright 2015 University of Antwerp
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/* 
+IMEC pH Sensor Lib
  */
 
 #include "hwsystem.h"
@@ -26,6 +12,8 @@
 #include "em_gpio.h"
 #include <debug.h>
 
+#include imec.h
+
 uint32_t tempData_pH;
 uint32_t tempData_Cl;
 static volatile bool updateMeasurementpH = true;
@@ -33,7 +21,7 @@ static volatile bool updateMeasurementCl = true;
 static volatile bool adcConversionCompletepH = false;
 static volatile bool adcConversionCompleteCl = false;
 
-void ADCConfig(void)
+void ADCConfig()
 {
 	ADC_Init_TypeDef       init       = ADC_INIT_DEFAULT;
 	  ADC_InitSingle_TypeDef singleInit = ADC_INITSINGLE_DEFAULT;
@@ -63,7 +51,7 @@ void init_Cl()
 	hw_gpio_configure_pin(D6, true, gpioModeInput, 0);
 }
 
-uint32_t get_pH_value(void)
+uint32_t get_pH_value()
 {
 	adcConversionComplete = false;
 	ADC_Start(ADC5, adcStartSingle);
@@ -72,7 +60,7 @@ uint32_t get_pH_value(void)
     return tempData_pH;
 }
 
-uint32_t get_Cl_value(void)
+uint32_t get_Cl_value()
 {
 	adcConversionComplete = false;
 	ADC_Start(ADC6, adcStartSingle);
