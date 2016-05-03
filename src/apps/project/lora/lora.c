@@ -39,48 +39,42 @@
 #define TX_LENGTH2       2
 #define INDENT_SPACES "  "
 
-static uart_handle_t* uart_lora;
-//static fifo_t fifo_lora;
+static uint8_t buffer[BUFFER_SIZE] = { 0 };
+static fifo_t fifo_lora;
 
-static uint8_t arr[12];
-uint8_t txBuffer[TX_LENGTH] = {'"','H','e','l','l','o',' ','W','o','l','d','"'};
-uint8_t txBuffer2[TX_LENGTH2] = {'O','K'};
-
-static void uart_receive_lora(uint8_t byte);
-void fill_buffer_lora();
+void uart_receive_lora(uint8_t byte);
+void readout_fifo_lora();
 void send_commando();
 
-
-void uart_init_lora()
+void init_fifo_lora()
 {
-	uart_lora = uart_init(0,9600,0);
-	uart_enable(uart_lora);
-	uart_set_rx_interrupt_callback(uart_lora,uart_receive_lora);
-	uart_rx_interrupt_enable(uart_lora);
+	fifo_init(&fifo_lora, buffer, BUFFER_SIZE);
 }
 
-static void uart_receive_lora(uint8_t byte)
+void uart_receive_lora(uint8_t byte)
 {
-	//uart_send_byte(uart_pc,byte);
+	error_t err;
+	err = fifo_put(&fifo_lora, &byte, 1); assert(err == SUCCESS);
+
+	readout_fifo_lora();
+	if(!sched_is_scheduled(&readout_fifo_lora))
+		sched_post_task(&readout_fifo_lora);
 }
 
-void fill_buffer_lora()
+void readout_fifo_lora()
 {
-	for(int i=0;i<sizeof(arr);i++)
-	{
-	  arr[i] = i; // Initializing each element seperately
-	}
 
 }
 
 void send_commando()
 {
-	char* string = "TEST\r\n";
-	uart_send_string(uart_lora,string);
-	fill_buffer_lora();
-	char myArray[] = { 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22 };
-	iM880A_SendRadioTelegram(txBuffer, TX_LENGTH);
+	//char* string = "TEST\r\n";
+	//uart_send_string(uart_lora,string);
+	//fill_buffer_lora();
+	//char myArray[] = { 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22 };
+	//iM880A_SendRadioTelegram(txBuffer, TX_LENGTH);
 }
+
 
 
 

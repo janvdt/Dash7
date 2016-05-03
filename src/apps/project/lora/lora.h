@@ -28,5 +28,7 @@ __LINK_C void uart_init_lora();
 
 __LINK_C void send_commando();
 
+__LINK_C void readout_fifo_lora();
+
 
 //__LINK_C void fifo_init(fifo_t * f, uint8_t * buffer, int size);

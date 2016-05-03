@@ -30,6 +30,7 @@
 #include "acc/acc.h"
 #include "lora/lora.h"
 #include "gps/gps.h"
+#include "uart/uart.h"
 #include "hwuart.h"
 #include "hwgpio.h"
 #include "em_gpio.h"
@@ -98,34 +99,30 @@ static void CbTxIndication(TRadioMsg* txMsg, TRadioFlags txFlags)
     }
 }
 
-void execute_sensor_measurement()
+void execute_hourly_measurement()
 {
-	//clear_fifo_gps();
-	//get_flow_meter_value();
-	accelero_read();
-	timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
+	get_flow_meter_value();
+	//accelero_read();
+	timer_post_task_delay(&execute_hourly_measurement, TIMER_TICKS_PER_SEC * 1);
 }
 
 void bootstrap()
 {
 
-    //initSensors();
-    //uart_init_gps();
-    //iM880A_Init();
+	uart_init_all();
+	init_flow_meter();
+    iM880A_Init();
     // Register callback functions for receive / send
     iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
-    //uart_init_lora();
-    //init_flow_meter();
-    init_accelero();
+    //init_accelero();
 
-    hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
-    hw_gpio_set(C0);
-
-    ubutton_register_callback(0, &userbutton_callback);
-    ubutton_register_callback(1, &userbutton_callback);
-
-    sched_register_task((&execute_sensor_measurement));
-    timer_post_task_delay(&execute_sensor_measurement, TIMER_TICKS_PER_SEC * 1);
+    //hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
+    //hw_gpio_set(C0);
+    //ubutton_register_callback(0, &userbutton_callback);
+    //ubutton_register_callback(1, &userbutton_callback);
+    
+    sched_register_task((&execute_hourly_measurement));
+    timer_post_task_delay(&execute_hourly_measurement, TIMER_TICKS_PER_SEC * 1);
 
 }
 

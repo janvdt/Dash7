@@ -20,11 +20,12 @@
 #include "types.h"
 #include "link_c.h"
 
-
-__LINK_C void uart_receive(uint8_t byte);
-
+/*
 __LINK_C void uart_init_gps();
 
 __LINK_C void uart_init_pc();
 
 __LINK_C void uart_init_sigfox();
+*/
+
+__LINK_C void uart_init_all();

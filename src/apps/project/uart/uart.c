@@ -23,37 +23,28 @@
 #include "em_cmu.h"
 #include <debug.h>
 #include "hwuart.h"
+#include "../gps/gps.h"
+#include "../lora/lora.h"
 
 static uart_handle_t* uart_gps;
-static uart_handle_t* uart_pc;
-static uart_handle_t* uart_sigfox;
+static uart_handle_t* uart_lora;
 
-void uart_receive(uint8_t byte)
+void uart_init_all()
 {
-	//uart_send_byte(uart_sigfox,byte);
-	char* c = &byte;
-	lcd_write_string(c);
-}
-void uart_init_gps()
-{
-	uart_gps = uart_init(1, 115200, 4);
+	//UART GPS
+	uart_gps = uart_init(1, 9600, 4);
+	uart_set_rx_interrupt_callback(uart_gps, &uart_receive_gps);
 	uart_enable(uart_gps);
-	uart_set_rx_interrupt_callback(uart_gps,uart_receive);
 	uart_rx_interrupt_enable(uart_gps);
-}
+	init_fifo_gps();
 
-void uart_init_sigfox()
-{
-	uart_sigfox = uart_init(1, 9600, 4);
-	uart_enable(uart_sigfox);
-	uart_set_rx_interrupt_callback(uart_sigfox,uart_receive);
-	uart_rx_interrupt_enable(uart_sigfox);
-}
+	//UART LORA
+	uart_lora = uart_init(0,9600,4);
+	uart_set_rx_interrupt_callback(uart_lora,&uart_receive_lora);
+	uart_enable(uart_lora);
+	uart_rx_interrupt_enable(uart_lora);
+	init_fifo_lora();
 
-void uart_init_pc()
-{
-	uart_pc = uart_init(0,115200,4);
-	uart_enable(uart_pc);
 }
 
 
