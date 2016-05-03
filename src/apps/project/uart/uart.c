@@ -25,9 +25,11 @@
 #include "hwuart.h"
 #include "../gps/gps.h"
 #include "../lora/lora.h"
+#include "../sigfox/sigfox.h"
+
 
 static uart_handle_t* uart_gps;
-static uart_handle_t* uart_lora;
+static uart_handle_t* uart_sigfox;
 
 
 void uart_init_all()
@@ -40,12 +42,14 @@ void uart_init_all()
 	init_fifo_gps();
 
 	//UART LORA
-	uart_lora = uart_init(0,9600,4);
-	uart_set_rx_interrupt_callback(uart_lora,&uart_receive_lora);
-	uart_enable(uart_lora);
-	uart_rx_interrupt_enable(uart_lora);
-	init_fifo_lora();
+	iM880A_Init();
 
+	//UART SIGFOX
+	uart_sigfox = uart_init(0, 9600, 4);
+	uart_enable(uart_sigfox);
+	uart_set_rx_interrupt_callback(uart_sigfox,&uart_receive_sigfox);
+	uart_rx_interrupt_enable(uart_sigfox);
+	init_fifo_sigfox();
 }
 
 

@@ -111,7 +111,6 @@ void bootstrap()
 
 	uart_init_all();
 	init_flow_meter();
-    iM880A_Init();
     // Register callback functions for receive / send
     iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
     //init_accelero();

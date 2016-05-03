@@ -7,14 +7,13 @@ Sigfox Lib
 #include "platform.h"
 #include "hwlcd.h"
 #include "hwadc.h"
-
 #include "sigfox.h"
-#include "extsensor.h"
-#include "uart.h"
 #include "hwuart.h"
 #include "fifo.h"
 #include "em_i2c.h"
 
+#define BUFFER_SIZE	256
+#define COMMAND_SIZE_BEGIN 25
 #define AT_COMMAND_PREFIX 	"AT$ss="
 #define AT_COMMAND_END		"\r"
 #define AT_MAX_MESSAGE_SIZE	96
@@ -23,6 +22,43 @@ Sigfox Lib
 
 extern uart_handle_t* o_uart;
 uint8_t sensor_values[8];
+
+fifo_t fifo_sigfox;
+uint8_t buffer[BUFFER_SIZE];
+
+void uart_receive_sigfox(uint8_t byte);
+void readout_fifo_sigfox();
+void init_fifo_sigfox();
+
+void init_fifo_sigfox()
+{
+	fifo_init(&fifo_sigfox, buffer, BUFFER_SIZE);
+}
+
+void uart_receive_sigfox(uint8_t byte)
+{
+	error_t err;
+	err = fifo_put(&fifo_sigfox, &byte, 1); assert(err == SUCCESS);
+
+	readout_fifo_sigfox();
+    if(!sched_is_scheduled(&readout_fifo_sigfox))
+        sched_post_task(&readout_fifo_sigfox);
+}
+
+void readout_fifo_sigfox()
+{
+
+	//if(fifo_get_size(&fifo_sigfox) >= 50)
+	//{
+		uint8_t length = fifo_get_size(&fifo_sigfox);
+		//uint8_t received_data[length];
+		//fifo_pop(&fifo_sigfox, buffer, length);
+		fifo_peek(&fifo_sigfox, buffer ,0, length);
+		lcd_write_string(buffer);
+		//TODO : make parser to read only message..not whole response
+
+	//}
+}
 
 void sendATmessage(char* data) //
 {
