@@ -16,38 +16,23 @@
  * limitations under the License.
  */
 
-#include "hwsystem.h"
-#include "hwadc.h"
-#include "em_system.h"
-#include "em_emu.h"
-#include "em_cmu.h"
-#include <debug.h>
-#include "hwuart.h"
-#include "../gps/gps.h"
-#include "../lora/lora.h"
 
-static uart_handle_t* uart_gps;
-static uart_handle_t* uart_lora;
+#include "types.h"
+#include "link_c.h"
 
 
-void uart_init_all()
-{
-	//UART GPS
-	uart_gps = uart_init(1, 9600, 4);
-	uart_set_rx_interrupt_callback(uart_gps, &uart_receive_gps);
-	uart_enable(uart_gps);
-	uart_rx_interrupt_enable(uart_gps);
-	init_fifo_gps();
+void uart_receive(uint8_t byte);
 
-	//UART LORA
-	uart_lora = uart_init(0,9600,4);
-	uart_set_rx_interrupt_callback(uart_lora,&uart_receive_lora);
-	uart_enable(uart_lora);
-	uart_rx_interrupt_enable(uart_lora);
-	init_fifo_lora();
+void uart_init_gps();
 
-}
+void uart_init_pc();
 
+void uart_init_sigfox();
+ 
+void uart_receive_pc(uint8_t byte);
+ 
+void readout_fifo_sigfox();
 
+void clear_fifo_sigfox();
 
 
