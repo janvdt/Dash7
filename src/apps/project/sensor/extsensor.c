@@ -23,22 +23,36 @@
 #include "em_cmu.h"
 #include "em_adc.h"
 #include "hwgpio.h"
+#include "timer.h"
 #include "em_gpio.h"
 #include <debug.h>
 
 uint8_t flow_frequency;
+void stop_pump();
 
 void counter_flow()
 {
   flow_frequency++;
 }
 
-void init_flow_meter()
+void start_pump()
 {
+	//Pin to start pump
+	hw_gpio_set(C2);
+
+	//initialize flow meter
 	hw_gpio_configure_pin(C0, true, gpioModeInput, 0);
 	error_t err;
-	    err = hw_gpio_configure_interrupt(C0,counter_flow,GPIO_RISING_EDGE);assert(err == SUCCESS);
+	err = hw_gpio_configure_interrupt(C0,counter_flow,GPIO_RISING_EDGE);assert(err == SUCCESS);
 	hw_gpio_enable_interrupt(C0);
+
+	timer_post_task_delay(&stop_pump, TIMER_TICKS_PER_SEC * 10);
+}
+
+void stop_pump()
+{
+	get_flow_meter_value();
+	hw_gpio_clr(C2);
 }
 
 void get_flow_meter_value()

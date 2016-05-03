@@ -25,6 +25,10 @@
  */
 __LINK_C void get_flow_meter();
 
+__LINK_C void start_pump();
+
+__LINK_C void stop_pump();
+
 
 
 
