@@ -115,7 +115,7 @@ void execute_hourly_measurement()
 void bootstrap()
 {
 
-	//uart_init_all();
+	uart_init_all();
     // Register callback functions for receive / send
     iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
     //init_accelero();
@@ -124,7 +124,6 @@ void bootstrap()
     //hw_gpio_set(C0);
     //ubutton_register_callback(0, &userbutton_callback);
     //ubutton_register_callback(1, &userbutton_callback);
-    hw_gpio_configure_pin(C2,1,gpioModeWiredOr,1);
     sched_register_task((&execute_hourly_measurement));
     sched_register_task((&execute_flow_pump_measurement));
     sched_register_task((&stop_pump));

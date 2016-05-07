@@ -127,7 +127,7 @@ ComSlip_Init()
     ComSlip.RxBufferSize    =   0;
 
     // Init Uart Interfaces
-     uart = uart_init(0, 115200, 0); //LDDUsart_Init();
+     uart = uart_init(1, 115200, 4); //LDDUsart_Init();
      uart_enable(uart);
 
     // Register ComSlip_ProcessRxByte at LDDUART
