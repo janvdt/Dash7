@@ -7,6 +7,7 @@ Accelerometer LIS3DH
 #include "acc.h"
 
 static i2c_handle_t* acc;
+double accelero_value;
 
 #define LIS3DH_ADDRESS	(0x18<<1)
 
@@ -53,4 +54,12 @@ void accelero_read()
 	i2c_write_data[0] = LIS3DH_STATUS_REG;
 	i2c_read(acc,(0x19 << 1),&data,1);
 	//i2c_write_read(acc,0x19,i2c_write_data,1,i2c_read_data,8);
+}
+
+void accelero_directionless_measurement()
+{
+	//Read x, y & z
+	//http://stackoverflow.com/questions/6291931/how-to-calculate-g-force-using-x-y-z-values-from-the-accelerometer-in-android?answertab=oldest#tab-top
+	//accelero_value = sqrt (x*x + y*y + z*z);
+	//return accelero_value;
 }
