@@ -16,21 +16,11 @@
  * limitations under the License.
  */
 
-#include "hwsystem.h"
-#include "hwadc.h"
-#include "em_system.h"
-#include "em_emu.h"
-#include "em_cmu.h"
-#include <debug.h>
-#include <stdbool.h>
-#include "hwuart.h"
 #include "fifo.h"
-#include "assert.h"
 #include "timer.h"
 #include "IM880A_RadioInterface.h"
-#include "hwlcd.h"
-#include <string.h>
-#include <ctype.h>
+
+
 
 
 #define BUFFER_SIZE	256
@@ -39,40 +29,58 @@
 #define TX_LENGTH2       2
 #define INDENT_SPACES "  "
 
-static uint8_t buffer[BUFFER_SIZE] = { 0 };
-static fifo_t fifo_lora;
+void lora_send(char* bytes, uint8_t length);
+void init_lora();
 
-void uart_receive_lora(uint8_t byte);
-void readout_fifo_lora();
-void send_commando();
+static void CbRxIndication (uint8_t* rxMsg, uint8_t length, TRadioFlags rxFlags);
+static void CbTxIndication (TRadioMsg* txMsg, TRadioFlags txFlags);
 
-void init_fifo_lora()
+void init_lora()
 {
-	fifo_init(&fifo_lora, buffer, BUFFER_SIZE);
+	//UART LORA
+	iM880A_Init();
+
+	// Register callback functions for receive / send
+	iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
 }
 
-void uart_receive_lora(uint8_t byte)
+void lora_send(char* bytes, uint8_t length)
 {
-	error_t err;
-	err = fifo_put(&fifo_lora, &byte, 1); assert(err == SUCCESS);
-
-	readout_fifo_lora();
-	if(!sched_is_scheduled(&readout_fifo_lora))
-		sched_post_task(&readout_fifo_lora);
+	if (iM880A_SendRadioTelegram(bytes, length) != WiMODLR_RESULT_OK)
+	{
+		//handle faults TO-DO
+	}
 }
 
-void readout_fifo_lora()
+//------------------------------------------------------------------------------
+//
+//	Receive callback function
+//
+//------------------------------------------------------------------------------
+static void CbRxIndication (uint8_t* rxMsg, uint8_t length, TRadioFlags rxFlags)
 {
-
+    if(rxFlags == trx_RXDone)
+    {
+        //mainEvent |= MSG_RECEIVED;  // Radio Msg received
+    }
 }
 
-void send_commando()
+
+//------------------------------------------------------------------------------
+//
+//	Transmit callback function
+//
+//------------------------------------------------------------------------------
+static void CbTxIndication (TRadioMsg* txMsg, TRadioFlags txFlags)
 {
-	//char* string = "TEST\r\n";
-	//uart_send_string(uart_lora,string);
-	//fill_buffer_lora();
-	//char myArray[] = { 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22, 0x00, 0x11, 0x22 };
-	//iM880A_SendRadioTelegram(txBuffer, TX_LENGTH);
+    if(txFlags == trx_TXDone)
+    {
+        // TX was successfull
+    }
+    else
+    {
+        //  error
+    }
 }
 
 

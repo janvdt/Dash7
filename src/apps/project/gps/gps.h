@@ -12,4 +12,20 @@ __LINK_C void readout_fifo_gps();
 
 __LINK_C void clear_fifo_gps();
 
-__LINK_C void init_fifo_gps();
+__LINK_C void init_gps();
+
+__LINK_C void enable_gps();
+
+__LINK_C void shut_down_gps();
+
+__LINK_C void set_latitude(int new_latitude);
+
+__LINK_C void set_longitude(int new_longitude);
+
+__LINK_C int get_longitude();
+
+__LINK_C int get_latitude();
+
+__LINK_C bool gps_is_fixed();
+
+__LINK_C void gps_fix_failed();

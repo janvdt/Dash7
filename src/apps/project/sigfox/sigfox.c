@@ -20,8 +20,8 @@ Sigfox Lib
 #define AT_DB_COMMAND		"ATS302="
 #define AT_RF_BIT_COMMAND	"AT$SB="
 
-extern uart_handle_t* o_uart;
-uint8_t sensor_values[8];
+static uart_handle_t* uart_sigfox;
+//uint8_t sensor_values[8];
 
 fifo_t fifo_sigfox;
 uint8_t buffer[BUFFER_SIZE];
@@ -29,6 +29,17 @@ uint8_t buffer[BUFFER_SIZE];
 void uart_receive_sigfox(uint8_t byte);
 void readout_fifo_sigfox();
 void init_fifo_sigfox();
+void init_sigfox();
+
+void init_sigfox()
+{
+	//UART SIGFOX
+	uart_sigfox = uart_init(0, 9600, 4);
+	uart_enable(uart_sigfox);
+	uart_set_rx_interrupt_callback(uart_sigfox,&uart_receive_sigfox);
+	uart_rx_interrupt_enable(uart_sigfox);
+	init_fifo_sigfox();
+}
 
 void init_fifo_sigfox()
 {
@@ -70,7 +81,7 @@ void sendATmessage(char* data) //
 	memcpy(f_data+strlen(AT_COMMAND_PREFIX)+strlen(data),AT_COMMAND_END, strlen(AT_COMMAND_END));
 
 	lcd_write_string("Sending... \n");
-	uart_send_string(o_uart,f_data); 
+	uart_send_string(uart_sigfox,f_data);
 	lcd_write_string("Data send! \n");
 }
 
@@ -84,7 +95,7 @@ void sendAT_DBmessage(char* data, size_t length) //
 	memcpy(f_data+strlen(AT_DB_COMMAND)+strlen(data),AT_COMMAND_END, strlen(AT_COMMAND_END));
 
 	lcd_write_string("Sending... \n");
-	uart_send_string(o_uart,f_data); 
+	uart_send_string(uart_sigfox,f_data);
 	lcd_write_string("Data send! \n");
 }
 
@@ -99,7 +110,7 @@ void sendAT_RFmessage(char* data, size_t length) //
 
 	lcd_write_string("Sending... \n");
 	lcd_write_string(f_data);
-	uart_send_string(o_uart,f_data); 
+	uart_send_string(uart_sigfox,f_data);
 	lcd_write_string("Data send! \n");
 }
 
@@ -121,7 +132,7 @@ void execute_send_data(){
 	char* data = "AT\r";
 
 	lcd_write_string("Sending... \n");
-	uart_send_string(o_uart,data);
+	uart_send_string(uart_sigfox,data);
 	lcd_write_string("Data send! \n");
 
 	//timer_post_task_delay(&execute_send_data, TIMER_TICKS_PER_SEC * 1);

@@ -29,6 +29,10 @@ __LINK_C void start_pump();
 
 __LINK_C void stop_pump();
 
+__LINK_C void set_flowvalue(int new_flowvalue);
+
+__LINK_C int get_flowvalue();
+
 
 
 

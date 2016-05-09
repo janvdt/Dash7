@@ -24,14 +24,19 @@
 #include "em_adc.h"
 #include "hwgpio.h"
 #include "timer.h"
+#include "hwlcd.h"
 #include "em_gpio.h"
 #include <debug.h>
 #include "../lora/IM880A_RadioInterface.h"
 
 uint8_t flow_frequency;
+int flow;
+
 void stop_pump();
 void get_flow_meter_value();
 void start_pump();
+void set_flowvalue(int new_flowvalue);
+int get_flowvalue();
 
 void counter_flow()
 {
@@ -50,25 +55,36 @@ void start_pump()
 	error_t err;
 	err = hw_gpio_configure_interrupt(C0,counter_flow,GPIO_RISING_EDGE);assert(err == SUCCESS);
 	hw_gpio_enable_interrupt(C0);
-
-	timer_post_task_delay(&stop_pump, TIMER_TICKS_PER_SEC * 5);
 }
 
 void stop_pump()
 {
 	get_flow_meter_value();
 	hw_gpio_clr(C2);
+	lcd_write_string("Pump stopped \r\n");
 }
 
 void get_flow_meter_value()
 {
 	uint8_t send_data[1];
+	set_flowvalue(flow_frequency / 7.5);
+	/*
 	char flow_value = (flow_frequency / 7.5);
 	send_data[0] = flow_value;
 	lcd_write_string("Flow meter: %d\n",flow_value);
 	iM880A_SendRadioTelegram(&send_data,sizeof(send_data));
 	flow_frequency = 0;
+	*/
 }
+
+void set_flowvalue(int new_flowvalue){
+	flow = new_flowvalue;
+}
+
+int get_flowvalue(){
+	return flow;
+}
+
 
 
 
