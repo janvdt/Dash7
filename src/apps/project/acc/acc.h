@@ -45,4 +45,8 @@ __LINK_C void accelero_wake_up();
 
 __LINK_C void accelero_read();
 
+__LINK_C void accelero_directionless_measurement();
+
+
+
 
