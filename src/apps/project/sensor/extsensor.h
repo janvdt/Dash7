@@ -29,9 +29,15 @@ __LINK_C void start_pump();
 
 __LINK_C void stop_pump();
 
+<<<<<<< HEAD
+__LINK_C void start_temp_sensor();
+
+__LINK_C uint32_t get_temp_sensor_value();
+=======
 __LINK_C void set_flowvalue(int new_flowvalue);
 
 __LINK_C int get_flowvalue();
+>>>>>>> 133f5b0d13dad0f9893f9df745e02ea7db6d9dee
 
 __LINK_C void set_tempvalue();
 __LINK_C void get_tempvalue();
