@@ -40,6 +40,8 @@ __LINK_C int get_flowvalue();
 __LINK_C void set_tempvalue();
 __LINK_C int get_tempvalue();
 
+__LINK_C void detect_water();
+
 
 
 

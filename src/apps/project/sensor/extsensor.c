@@ -41,6 +41,7 @@ int get_flowvalue();
 void set_tempvalue();
 int get_tempvalue();
 void init_temp_sensor();
+void detect_water();
 
 void counter_flow()
 {
@@ -85,8 +86,9 @@ void init_temp_sensor()
 uint32_t get_temp_sensor_value()
 {
 	uint32_t tempData_temperature = adc_read_single();
-	tempData_temperature = (((tempData_temperature*1250)/4096)-440)/10;
+	tempData_temperature = (tempData_temperature*1250)/4096; //TODO : fix the damn function for temperature
 	set_tempvalue(tempData_temperature);
+	return tempData_temperature;
 }
 
 void set_flowvalue(int new_flowvalue){
@@ -105,4 +107,8 @@ void set_tempvalue(int new_temp)
 int get_tempvalue()
 {
 	return temp;
+}
+void detect_water()
+{
+	///
 }

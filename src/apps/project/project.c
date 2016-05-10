@@ -212,6 +212,7 @@ void sensor_measurement()
 
 				EMU_EnterEM2(true);
 				get_temp_sensor_value();
+				lcd_write_string("TEMP : %d \r\n",get_temp_sensor_value());
 				lcd_write_string("temperature : %d \r\n",get_tempvalue());
 
 				current_task = PH;
@@ -242,7 +243,7 @@ void sensor_measurement()
 
 				lcd_write_string("data send! \r\n");
 				EMU_EnterEM2(true);
-				current_task = GPS_DATA;
+				current_task = TEMPERATURE;
 				sensor_measurement();
 
 
