@@ -204,12 +204,14 @@ void sensor_measurement()
 			case TEMPERATURE:
 			{
 				lcd_write_string("Water temperature\r\n");
+				init_temp_sensor();
 				timer_tick_t stop_time_temp = timer_get_counter_value() + 1000;
 				if(!sched_is_scheduled(sensor_measurement)){
 					error_t temp_timer_task = timer_post_task(sensor_measurement, stop_time_temp);
 				}
 
 				EMU_EnterEM2(true);
+				lcd_write_string("temperature : %d \r\n",get_tempvalue());
 
 				current_task = PH;
 
