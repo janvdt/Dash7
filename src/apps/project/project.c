@@ -29,46 +29,38 @@
 #include "sensor/extsensor.h"
 #include "acc/acc.h"
 #include "lora/lora.h"
+#include "sigfox/sigfox.h"
 #include "gps/gps.h"
-#include "uart/uart.h"
 #include "hwuart.h"
 #include "hwgpio.h"
 #include "em_gpio.h"
 #include "lora/IM880A_RadioInterface.h"
-
-
-
-#if (!defined PLATFORM_EFM32GG_STK3700 && !defined PLATFORM_EFM32HG_STK3400 && !defined PLATFORM_EZR32LG_WSTK6200A)
-	#error Mismatch between the configured platform and the actual platform.
-#endif
-
 #include "userbutton.h"
 #include "platform_sensors.h"
 #include "platform_lcd.h"
 
-#define SENSOR_FILE_ID           0x40
-#define SENSOR_FILE_SIZE         8
-#define ACTION_FILE_ID           0x41
-#define TX_LENGTH               13
+enum sensor_tasks {
+	GPS_DATA,
+	PARSE_GPS,
+	PUMP_FLOW,
+	TEMPERATURE,
+	PH,
+	GET_DATA_SEND,
+	SEND,
+	SLEEP
+} current_task = GPS_DATA;
 
-
-#define APP_MODE_LEDS		1
-#define APP_MODE_LCD		1 << 1
-#define APP_MODE_CONSOLE	1 << 2
-
-
-typedef enum
-{
-    SEND_MSG                        = 0x0001,
-    POWER_UP                        = 0x0002,
-    MSG_RECEIVED                    = 0x0004,
-
-}TMainEventCode;
+enum choose_send_method {
+	DASH7,
+	SIGFOX,
+	LORA
+} current_send_method = LORA;
 
 uint8_t app_mode_status = 0xFF;
 uint8_t app_mode_status_changed = 0x00;
 uint8_t app_mode = 0;
 uint8_t mainEvent = 0;
+int gps_fix_counter = 0;
 
 double sensor_values[96];	//ben niet zeker van datatype..of als string doorsturen?
 							//max van 96 bits doorsturen.
@@ -77,13 +69,13 @@ double sensor_values[96];	//ben niet zeker van datatype..of als string doorsture
 Message structure 96 bits
 Place of bits 	(x:x) & possible value (xx)
 -Control bits 	(1:8) : Water in tophalf (0/1), Battery Charching (0/1) , Percentage of battery in 5% steps (from 0 to 20)(00000/10100) , one bit left
-- Water temp 	(9:16) : from -50 to 125 °C --> 8 bits (1100 1100 to 0111 1101 )
+- Water temp 	(9:16) : from -50 to 125 ï¿½C --> 8 bits (1100 1100 to 0111 1101 )
 - CL			(17:25) : Reserve for CL (can be changed) --> can be used for temperature (1 getal na de komma erbij --> 4 bits) + 4 bits vrij
 - pH 			(25:32) : pH value from 3,9 to 10,9 pH (8 bits)
 - Accelerometer	(33:40) :  calculate the G force as an directionless measurement --> 1 byte of data:double g = Math.sqrt(x * x + y * y + z * z);
 - Flow meter	(41:50) : from 0,00 to 6,00L (10 0101 1000)
-- Latitude(GPS) (51:70) : -90,00000 to + 90,00000° --> 20 bits (0001 0101 1111 1001 0000 to 1001 0101 1111 1001 0000)
-- Longitude(GPS)(71:94) :  -180,0000 to + 180,0000° --> 24 bits (0001 1011 0111 0111 0100 0000? tot 1001 1011 0111 0111 0100 0000)
+- Latitude(GPS) (51:70) : -90,00000 to + 90,00000ï¿½ --> 20 bits (0001 0101 1111 1001 0000 to 1001 0101 1111 1001 0000)
+- Longitude(GPS)(71:94) :  -180,0000 to + 180,0000ï¿½ --> 24 bits (0001 1011 0111 0111 0100 0000? tot 1001 1011 0111 0111 0100 0000)
  - open			(95:96) : can be used
 */
 
@@ -96,57 +88,176 @@ void userbutton_callback(button_id_t button_id)
 	#endif
 }
 
-static void CbRxIndication(uint8_t* rxMsg,uint8_t length, TRadioFlags rxFlags)
+void set_send_method()
 {
-    if(rxFlags == trx_RXDone)
-    {
-        mainEvent |= MSG_RECEIVED;  // Radio Msg received
-    }
+	switch(current_send_method)
+	{
+		case DASH7:
+			//TO DO
+			break;
+
+		case SIGFOX:
+			//init_sigfox();
+			break;
+
+		case LORA:
+			//init_lora();
+			break;
+	}
 }
 
-static void CbTxIndication(TRadioMsg* txMsg, TRadioFlags txFlags)
+void send_data(uint8_t* data)
 {
-    if(txFlags == trx_TXDone)
-    {
-        // TX was successfull
-    }
-    else
-    {
-        //  error
-    }
+	switch(current_send_method)
+	{
+		case DASH7:
+			// TO DO
+			break;
+
+		case SIGFOX:
+			//sendATmessage(data);
+			break;
+
+		case LORA:
+			//lora_send(data,sizeof(data));
+			break;
+	}
 }
 
-void execute_flow_pump_measurement()
-{
-	start_pump();
-	timer_post_task_delay(&execute_flow_pump_measurement, TIMER_TICKS_PER_SEC * 12);
+void get_measurements(uint8_t* data){
+
+	//Control Bits
+	data[0] = 0x00;
+	//Water Temp
+	data[1] = 0x00;
+	//CL
+	data[2] = 0x00;
+	//Ph
+	data[3] = 0x00;
+	//Accelerometer
+	data[4] = 0x00;
+	//Flow meter
+	data[5] = get_flowvalue();
+	//Longitude
+	data[6] = get_longitude();
+	data[7] = get_latitude();
 }
 
-void execute_hourly_measurement()
+void init_measurement_structure()
 {
-	//get_flow_meter_value();
-	//accelero_read();
-	timer_post_task_delay(&execute_hourly_measurement, TIMER_TICKS_PER_SEC * 1);
+	set_send_method();
+	uint8_t data[12];
+	get_measurements(data);
+	send_data(data);
+}
+
+void sensor_measurement()
+{
+	switch(current_task){
+			case GPS_DATA:
+			{
+				lcd_write_string("Getting GPS \r\n");
+				enable_gps();
+				timer_tick_t stop_time = timer_get_counter_value() + 40000;
+				if(!sched_is_scheduled(sensor_measurement)){
+					error_t gps_timer_task = timer_post_task(sensor_measurement, stop_time);
+				}
+
+				current_task = PARSE_GPS;
+				EMU_EnterEM2(true);
+
+			} break;
+
+			case PARSE_GPS:
+			{
+				if(gps_is_fixed())
+				{
+					lcd_write_string("Gps is fixed \r\n");
+					lcd_write_string("%d - %d \r\n", get_latitude(), get_longitude());
+					current_task = PUMP_FLOW;
+					sensor_measurement();
+				}
+				else
+				{
+					lcd_write_string("Gps fix failed \r\n");
+					gps_fix_failed();
+					current_task = PUMP_FLOW;
+					sensor_measurement();
+				}
+
+			} break;
+
+
+			case PUMP_FLOW:
+			{
+				lcd_write_string("Starting pump \r\n");
+				start_pump();
+				timer_tick_t stop_time_flow = timer_get_counter_value() + 10000;
+				if(!sched_is_scheduled(sensor_measurement)){
+					error_t flow_timer_task = timer_post_task(sensor_measurement, stop_time_flow);
+				}
+
+				EMU_EnterEM2(true);
+
+				stop_pump();
+				current_task = TEMPERATURE;
+
+			} break;
+			case TEMPERATURE:
+			{
+				lcd_write_string("Water temperature\r\n");
+				timer_tick_t stop_time_temp = timer_get_counter_value() + 1000;
+				if(!sched_is_scheduled(sensor_measurement)){
+					error_t temp_timer_task = timer_post_task(sensor_measurement, stop_time_temp);
+				}
+
+				EMU_EnterEM2(true);
+
+				current_task = PH;
+
+			} break;
+			case PH:
+			{
+				lcd_write_string("PH quality \r\n");
+				timer_tick_t stop_time_ph = timer_get_counter_value() + 1000;
+				if(!sched_is_scheduled(sensor_measurement)){
+					error_t ph_timer_task = timer_post_task(sensor_measurement, stop_time_ph);
+				}
+
+				EMU_EnterEM2(true);
+
+				current_task = GET_DATA_SEND;
+
+			} break;
+			case GET_DATA_SEND:
+			{
+				lcd_write_string("Collect all data \r\n");
+				init_measurement_structure();
+
+				timer_tick_t stop_time_send = timer_get_counter_value() + 10000;
+				if(!sched_is_scheduled(sensor_measurement)){
+					error_t send_timer_task = timer_post_task(sensor_measurement, stop_time_send);
+				}
+
+				lcd_write_string("data send! \r\n");
+				EMU_EnterEM2(true);
+				current_task = GPS_DATA;
+				sensor_measurement();
+
+
+			} break;
+			case SLEEP:
+			{
+
+
+			} break;
+	}
 }
 
 void bootstrap()
 {
-
-	//uart_init_all();
-    // Register callback functions for receive / send
-    iM880A_RegisterRadioCallbacks(CbRxIndication, CbTxIndication);
-    //init_accelero();
-
-    //hw_gpio_configure_pin(C0,1,gpioModeWiredOr,1);
-    //hw_gpio_set(C0);
-    //ubutton_register_callback(0, &userbutton_callback);
-    //ubutton_register_callback(1, &userbutton_callback);
-    hw_gpio_configure_pin(C2,1,gpioModeWiredOr,1);
-    sched_register_task((&execute_hourly_measurement));
-    sched_register_task((&execute_flow_pump_measurement));
-    sched_register_task((&stop_pump));
-    timer_post_task_delay(&execute_hourly_measurement, TIMER_TICKS_PER_SEC * 1);
-    timer_post_task_delay(&execute_flow_pump_measurement, TIMER_TICKS_PER_SEC * 1);
-
+	init_gps();
+	sched_register_task(sensor_measurement);
+	sensor_measurement();
 }
 

@@ -22,5 +22,7 @@ __LINK_C void init_fifo_sigfox();
 
 __LINK_C void uart_receive_sigfox(uint8_t byte);
 
+__LINK_C void init_sigfox();
+
 
 	
