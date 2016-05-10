@@ -85,7 +85,7 @@ void init_temp_sensor()
 uint32_t get_temp_sensor_value()
 {
 	uint32_t tempData_temperature = adc_read_single();
-	tempData_temperature = ((tempData_temperature*125)/4096)-44;
+	tempData_temperature = (((tempData_temperature*1250)/4096)-440)/10;
 	set_tempvalue(tempData_temperature);
 }
 

@@ -159,7 +159,7 @@ void sensor_measurement()
 				lcd_write_string("Getting GPS \r\n");
 				enable_gps();
 				current_task = PARSE_GPS;
-				timer_tick_t stop_time = timer_get_counter_value() + 40000;
+				timer_tick_t stop_time = timer_get_counter_value() + 1000;
 				if(!sched_is_scheduled(sensor_measurement)){
 					error_t gps_timer_task = timer_post_task(sensor_measurement, stop_time);
 				}
@@ -211,6 +211,7 @@ void sensor_measurement()
 				}
 
 				EMU_EnterEM2(true);
+				get_temp_sensor_value();
 				lcd_write_string("temperature : %d \r\n",get_tempvalue());
 
 				current_task = PH;
