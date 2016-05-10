@@ -52,11 +52,13 @@ void init_gps()
 	fifo_init(&fifo_gps, buffer, BUFFER_SIZE);
 	uart_gps = uart_init(1,9600,4);
 	uart_enable(uart_gps);
+
 }
 
 void enable_gps()
 {
 	gps_fix = false;
+
 
 	uart_send_string(uart_gps, BAUD_RATE);
 	uart_send_string(uart_gps, MESSAGE_RATE);
@@ -131,6 +133,7 @@ void disable_gps()
 
 void shut_down_gps()
 {
+	clear_fifo_gps();
 	disable_gps();
 	uart_disable(uart_gps);
 }

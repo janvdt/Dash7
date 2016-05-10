@@ -33,6 +33,9 @@ __LINK_C void set_flowvalue(int new_flowvalue);
 
 __LINK_C int get_flowvalue();
 
+__LINK_C void set_tempvalue();
+__LINK_C void get_tempvalue();
+
 
 
 

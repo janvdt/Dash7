@@ -31,12 +31,15 @@
 
 uint8_t flow_frequency;
 int flow;
+int temp;
 
 void stop_pump();
 void get_flow_meter_value();
 void start_pump();
 void set_flowvalue(int new_flowvalue);
 int get_flowvalue();
+void set_tempvalue();
+int get_tempvalue();
 
 void counter_flow()
 {
@@ -68,13 +71,7 @@ void get_flow_meter_value()
 {
 	uint8_t send_data[1];
 	set_flowvalue(flow_frequency / 7.5);
-	/*
-	char flow_value = (flow_frequency / 7.5);
-	send_data[0] = flow_value;
-	lcd_write_string("Flow meter: %d\n",flow_value);
-	iM880A_SendRadioTelegram(&send_data,sizeof(send_data));
 	flow_frequency = 0;
-	*/
 }
 
 void set_flowvalue(int new_flowvalue){
@@ -83,6 +80,16 @@ void set_flowvalue(int new_flowvalue){
 
 int get_flowvalue(){
 	return flow;
+}
+
+void set_tempvalue(int new_temp)
+{
+	temp = new_temp;
+}
+
+int get_tempvalue()
+{
+	return temp;
 }
 
 
