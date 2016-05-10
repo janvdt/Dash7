@@ -32,6 +32,7 @@
 uint8_t flow_frequency;
 int flow;
 int temp;
+int waterDetect = 0;
 
 void stop_pump();
 void get_flow_meter_value();
@@ -41,7 +42,8 @@ int get_flowvalue();
 void set_tempvalue();
 int get_tempvalue();
 void init_temp_sensor();
-void detect_water();
+void init_water_detection();
+void water_detected();
 
 void counter_flow()
 {
@@ -86,7 +88,7 @@ void init_temp_sensor()
 uint32_t get_temp_sensor_value()
 {
 	uint32_t tempData_temperature = adc_read_single();
-	tempData_temperature = (((tempData_temperature*1250)/4096)-500)/10;
+	tempData_temperature = (((tempData_temperature*1250)/4096)-500)/10; //TODO / fix damn values sensor!!!!
 	set_tempvalue(tempData_temperature);
 	return tempData_temperature;
 }
@@ -108,7 +110,21 @@ int get_tempvalue()
 {
 	return temp;
 }
-void detect_water()
+void init_water_detection()
 {
 	///
+	hw_gpio_configure_pin(C1, true, gpioModeInput, 0);
+	error_t err;
+	err = hw_gpio_configure_interrupt(C1,water_detected,GPIO_RISING_EDGE);assert(err == SUCCESS);
+	hw_gpio_enable_interrupt(C1);
+}
+
+void water_detected()
+{
+	waterDetect = 1;
+}
+
+int get_water_detected()
+{
+	return waterDetect;
 }

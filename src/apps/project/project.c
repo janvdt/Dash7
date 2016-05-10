@@ -248,6 +248,7 @@ void sensor_measurement()
 
 
 			} break;
+			//TODO: add case for waterdetection
 			case SLEEP:
 			{
 
