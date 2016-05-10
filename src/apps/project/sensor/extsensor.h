@@ -29,7 +29,7 @@ __LINK_C void start_pump();
 
 __LINK_C void stop_pump();
 
-__LINK_C void start_temp_sensor();
+__LINK_C void init_temp_sensor();
 
 __LINK_C uint32_t get_temp_sensor_value();
 
@@ -38,7 +38,9 @@ __LINK_C void set_flowvalue(int new_flowvalue);
 __LINK_C int get_flowvalue();
 
 __LINK_C void set_tempvalue();
-__LINK_C void get_tempvalue();
+__LINK_C int get_tempvalue();
+
+__LINK_C void detect_water();
 
 
 

@@ -40,6 +40,8 @@ void set_flowvalue(int new_flowvalue);
 int get_flowvalue();
 void set_tempvalue();
 int get_tempvalue();
+void init_temp_sensor();
+void detect_water();
 
 void counter_flow()
 {
@@ -74,10 +76,10 @@ void get_flow_meter_value()
 	flow_frequency = 0;
 }
 
-void start_temp_sensor()
+void init_temp_sensor()
 {
 	//initialize temp sensor
-	hw_gpio_configure_pin(D4,true, gpioModePushPull, 0);
+	//hw_gpio_configure_pin(D4,true, gpioModePushPull, 0);
 	adc_init(adcReference1V25,adcInputSingleCh4,1000);
 }
 
@@ -85,6 +87,7 @@ uint32_t get_temp_sensor_value()
 {
 	uint32_t tempData_temperature = adc_read_single();
 	tempData_temperature = (((tempData_temperature*1250)/4096)-500)/10;
+	set_tempvalue(tempData_temperature);
 	return tempData_temperature;
 }
 
@@ -104,4 +107,8 @@ void set_tempvalue(int new_temp)
 int get_tempvalue()
 {
 	return temp;
+}
+void detect_water()
+{
+	///
 }
