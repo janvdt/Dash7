@@ -62,5 +62,17 @@ void get_flow_meter_value()
 	flow_frequency = 0;
 }
 
+void start_temp_sensor()
+{
+	//initialize temp sensor
+	hw_gpio_configure_pin(D4,true, gpioModePushPull, 0);
+	adc_init(adcReference1V25,adcInputSingleCh4,1000);
 
+}
 
+uint32_t get_temp_sensor_value()
+{
+	uint32_t tempData_temperature = adc_read_single();
+	tempData_temperature = ((tempData_temperature*125)/4096)-44;
+	return tempData_temperature;
+}
