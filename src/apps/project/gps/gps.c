@@ -33,6 +33,7 @@ const char* MESSAGE_RATE 	= "$PMTK220,1000*1F\r\n";
 const char* BAUD_RATE 		= "$PMTK251,9600*17\r\n";
 const char* STOP_MODE 		= "$PMTK161,0*28\r\n";
 const char* GNRMC_ONLY		= "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
+const char* COLD_RESTART 	= "$PMTK103*30\r\n";
 
 int latitude;
 int longitude;
@@ -52,21 +53,16 @@ void init_gps()
 	fifo_init(&fifo_gps, buffer, BUFFER_SIZE);
 	uart_gps = uart_init(1,9600,4);
 	uart_enable(uart_gps);
+	uart_set_rx_interrupt_callback(uart_gps, &uart_receive_gps);
+	uart_rx_interrupt_enable(uart_gps);
 
 }
 
 void enable_gps()
 {
 	gps_fix = false;
-
-
-	uart_send_string(uart_gps, BAUD_RATE);
-	uart_send_string(uart_gps, MESSAGE_RATE);
 	uart_send_string(uart_gps, GNRMC_ONLY);
-
-	uart_set_rx_interrupt_callback(uart_gps, &uart_receive_gps);
-	uart_rx_interrupt_enable(uart_gps);
-
+	uart_send_string(uart_gps, COLD_RESTART);
 }
 
 void uart_receive_gps(uint8_t byte)
@@ -134,8 +130,9 @@ void disable_gps()
 void shut_down_gps()
 {
 	clear_fifo_gps();
-	disable_gps();
-	uart_disable(uart_gps);
+	uart_send_string(uart_gps, STOP_MODE);
+	//disable_gps();
+	//uart_disable(uart_gps);
 }
 
 void set_latitude(int new_latitude){
