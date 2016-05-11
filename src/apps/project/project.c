@@ -78,9 +78,10 @@ Place of bits 	(x:x)  - data[x] & possible value (xx)
 					   - data[5]
 - Longitude(GPS)(50:72)- data[6] : -180,0000 to + 180,0000� --> 24 bits (0001 1011 0111 0111 0100 0000? tot 1001 1011 0111 0111 0100 0000)
 						 data[7]
-- Flow meter	(73:80)- data[8] : from 0,00 to 6,00L (10 0101 1000)
-- Accelerometer	(81:96)- data[9] :  calculate the G force as an directionless measurement --> 1 byte of data:double g = Math.sqrt(x * x + y * y + z * z);
-					   - data[10]
+						 data[8]
+- Flow meter	(73:80)- data[9] : from 0,00 to 6,00L (10 0101 1000)
+- Accelerometer	(81:96)- data[10] :  calculate the G force as an directionless measurement --> 1 byte of data:double g = Math.sqrt(x * x + y * y + z * z);
+					   - data[11]
 
 */
 
@@ -125,7 +126,7 @@ void send_data(uint8_t* data)
 
 		//SizeOF not working!
 		case LORA:
-			lora_send(data,8);
+			lora_send(data,12);
 			break;
 	}
 }
@@ -133,30 +134,31 @@ void send_data(uint8_t* data)
 void get_measurements(uint8_t* data){
 
 	//Control Bits
-	data[0] = 0x01;
+	data[0] = 20;
 	//Water Temp
 	data[1] = get_tempvalue();
-	//CL
-	data[2] = 0x03;
-	//Ph
-	data[3] = 0x08;
+	//PH
+	data[2] = 7;
+	//Latitude + 900000
+	uint32_t latitude = 5113436;
+	data[3] = (uint8_t) (latitude >> 16) & 255;
+	data[4] = (uint8_t) (latitude >> 8) & 255;
+	data[5] = (uint8_t) (latitude) & 255;
+	//Longitude + 1800000
+	uint32_t longitude = 42495;
+	data[6] = (uint8_t) (longitude >> 16) & 255;
+	data[7] = (uint8_t) (longitude >> 8) & 255;
+	data[8] = (uint8_t) (longitude) & 255;
+	//Flow
+	data[9] = get_flowvalue();
 	//Accelerometer
-	data[4] = 0x05;
-	data[5] = 0x05;
-	data[6] = 0x06;
-	data[7] = 0x07;
-	/*
-	//Flow meter
-	data[5] = get_flowvalue();
-	//Longitude
-	data[6] = get_longitude();
-	data[7] = get_latitude();
-	*/
+	data[10] = 0;
+	data[11] = 0;
 }
 
 void init_measurement_structure()
 {
-	uint8_t data[8];
+	uint8_t data[12];
 	get_measurements(data);
 	send_data(data);
 }

@@ -35,8 +35,8 @@ const char* STOP_MODE 		= "$PMTK161,0*28\r\n";
 const char* GNRMC_ONLY		= "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
 const char* COLD_RESTART 	= "$PMTK103*30\r\n";
 
-int latitude;
-int longitude;
+uint32_t latitude;
+uint32_t longitude;
 bool gps_fix;
 int fifo_size;
 
@@ -147,11 +147,11 @@ bool gps_is_fixed(){
 	return gps_fix;
 }
 
-int get_latitude(){
+uint32_t get_latitude(){
 	return latitude;
 }
 
-int get_longitude(){
+uint32_t get_longitude(){
 	return longitude;
 }
 
