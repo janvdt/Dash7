@@ -18,9 +18,9 @@ __LINK_C void enable_gps();
 
 __LINK_C void shut_down_gps();
 
-__LINK_C void set_latitude(int new_latitude);
+__LINK_C void set_latitude(uint32_t new_latitude);
 
-__LINK_C void set_longitude(int new_longitude);
+__LINK_C void set_longitude(uint32_t new_longitude);
 
 __LINK_C int get_longitude();
 

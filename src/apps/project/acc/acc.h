@@ -1,52 +1,53 @@
-/*
-Accelerometer LIS3DH
+// acceleromter interface
+// autho: Christophe VG <contact@christophe.vg>
 
-*/
+#ifndef __ACCELEROMETER_H
+#define __ACCELEROMETER_H
 
-#include "types.h"
 #include "link_c.h"
+#include "types.h"
+#include "platform.h"
 
-#define ACC_ADDRESS 0x1D
-#define I2C_WRITE (0xFE)
-#define I2C_READ  (0x01)
-#define LIS3DH_STATUS_REG_AUX 0x07
-#define LIS3DH_OUT_ADC1_L 0x08
-#define LIS3DH_OUT_ADC1_H 0x09
-#define LIS3DH_OUT_ADC2_L 0x0A
-#define LIS3DH_OUT_ADC2_H 0x0B
-#define LIS3DH_OUT_ADC3_L 0x0C
-#define LIS3DH_OUT_ADC3_H 0x0D
-#define LIS3DH_INT_COUNTER_REG 0x0E
-#define LIS3DH_WHO_AM_I 0x0F
-#define LIS3DH_TEMP_CFG_REG 0x1F
-#define LIS3DH_CTRL_REG1 0x20
-#define LIS3DH_CTRL_REG2 0x21
-#define LIS3DH_CTRL_REG3 0x22
-#define LIS3DH_CTRL_REG4 0x23
-#define LIS3DH_CTRL_REG5 0x24
-#define LIS3DH_CTRL_REG6 0x25
-#define LIS3DH_REFERENCE 0x26
-#define LIS3DH_STATUS_REG 0x27
-#define LIS3DH_OUT_X_L 0x28
-#define LIS3DH_OUT_X_H 0x29
-#define LIS3DH_OUT_Y_L 0x2A
-#define LIS3DH_OUT_Y_H 0x2B
-#define LIS3DH_OUT_Z_L 0x2C
-#define LIS3DH_OUT_Z_H 0x2D
-#define LIS3DH_FIFO_CTRL_REG 0x2E
-#define LIS3DH_FIFO_SRC_REG 0x2F
-#define LIS3DH_INT1_CFG 0x30
+typedef struct {
+  int16_t AXIS_X;
+  int16_t AXIS_Y;
+  int16_t AXIS_Z;
+} axes_data_t;
 
+typedef void (*accelerometer_callback_t)();
 
+/*! \brief Initialises the sensors
+ * 			- accelerometer
+ */
+__LINK_C bool accelerometer_init();
 
-__LINK_C void init_accelero();
+__LINK_C bool accelerometer_enable_axis(bool x, bool y, bool z);
 
-__LINK_C void accelero_wake_up();
+/*! \brief Set threshold to receive interrupt
+ * 	threshold [0, 31]
+ */
+__LINK_C bool accelerometer_set_threshold(uint8_t threshold, bool x_high, bool x_low, bool y_high, bool y_low, bool z_high, bool z_low);
 
-__LINK_C void accelero_read();
+__LINK_C uint8_t accelerometer_read(axes_data_t *data);
 
-__LINK_C void accelero_directionless_measurement();
+__LINK_C bool accelerometer_register_callback(accelerometer_callback_t callback);
 
+__LINK_C bool accelerometer_deregister_callback();
 
+__LINK_C uint8_t accelerometer_get_register(uint8_t reg);
 
+__LINK_C void acc_start();
 
+__LINK_C uint8_t accelerometer_get_position();
+
+__LINK_C void set_x(uint8_t new_x);
+
+__LINK_C void set_y(uint8_t new_y);
+
+__LINK_C uint8_t get_x();
+
+__LINK_C uint8_t get_y();
+
+__LINK_C void get_acc_data();
+
+#endif

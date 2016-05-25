@@ -23,6 +23,7 @@
 #include "platform.h"
 #include "hwlcd.h"
 #include "hwadc.h"
+#include "em_emu.h"
 //#include "d7ap_stack.h"
 //#include "fs.h"
 #include "log.h"
@@ -35,11 +36,13 @@
 #include "hwgpio.h"
 #include "em_gpio.h"
 #include "lora/IM880A_RadioInterface.h"
+#include "acc/lis3dh_driver.h"
 #include "userbutton.h"
 #include "platform_sensors.h"
 #include "platform_lcd.h"
 
 enum sensor_tasks {
+	WAKEUP,
 	GPS_DATA,
 	PARSE_GPS,
 	START_PUMP_FLOW,
@@ -47,10 +50,11 @@ enum sensor_tasks {
 	INIT_TEMPERATURE,
 	GET_TEMPERATURE,
 	PH,
+	ACC,
 	GET_DATA_SEND,
 	SEND,
 	SLEEP
-} current_task = GPS_DATA;
+} current_task = WAKEUP;
 
 enum choose_send_method {
 	DASH7,
@@ -136,24 +140,28 @@ void get_measurements(uint8_t* data){
 	//Control Bits
 	data[0] = 20;
 	//Water Temp
-	data[1] = get_tempvalue();
+	uint8_t temp = get_tempvalue();
+	data[1] = temp;
 	//PH
 	data[2] = 7;
 	//Latitude + 900000
-	uint32_t latitude = 5113436;
+	uint32_t latitude = get_latitude();
 	data[3] = (uint8_t) (latitude >> 16) & 255;
 	data[4] = (uint8_t) (latitude >> 8) & 255;
 	data[5] = (uint8_t) (latitude) & 255;
 	//Longitude + 1800000
-	uint32_t longitude = 42495;
+	uint32_t longitude = get_longitude();
 	data[6] = (uint8_t) (longitude >> 16) & 255;
 	data[7] = (uint8_t) (longitude >> 8) & 255;
 	data[8] = (uint8_t) (longitude) & 255;
 	//Flow
-	data[9] = get_flowvalue();
+	uint8_t flow = get_flowvalue();
+	data[9] = flow;
 	//Accelerometer
-	data[10] = 0;
-	data[11] = 0;
+	uint8_t x = get_x();
+	uint8_t y = get_y();
+	data[10] = x;
+	data[11] = y;
 }
 
 void init_measurement_structure()
@@ -166,19 +174,37 @@ void init_measurement_structure()
 void sensor_measurement()
 {
 	switch(current_task){
+
+			//Switch on Gps and look for fix! wait ... secs
+			case WAKEUP:
+			{
+				//hw_enter_lowpower_mode(0);
+				current_task = GPS_DATA;
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
+
+
+			} break;
 			case GPS_DATA:
 			{
+				//hw_enter_lowpower_mode(0);
 				lcd_write_string("Getting GPS \r\n");
 				enable_gps();
 				current_task = PARSE_GPS;
 
-				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 10);
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 20);
 
 
 			} break;
 
+			//Parse the gps data Fix or no fix?
 			case PARSE_GPS:
 			{
+				lcd_write_string("Gps is fixed \r\n");
+				lcd_write_string("%d - %d \r\n", get_latitude(), get_longitude());
+				shut_down_gps();
+				current_task = START_PUMP_FLOW;
+				sensor_measurement();
+				/*
 				if(gps_is_fixed())
 				{
 					lcd_write_string("Gps is fixed \r\n");
@@ -193,25 +219,27 @@ void sensor_measurement()
 					current_task = START_PUMP_FLOW;
 					sensor_measurement();
 				}
+				*/
 
 			} break;
 
-
+			//Start pump and initialize flow meter
 			case START_PUMP_FLOW:
 			{
 				lcd_write_string("Starting pump \r\n");
 				start_pump();
 				current_task = STOP_PUMP_FLOW;
-				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 2);
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
 
 			} break;
+			//Stop pump
 			case STOP_PUMP_FLOW:
 			{
 				stop_pump();
 				current_task = INIT_TEMPERATURE;
 				lcd_write_string("Flow value %d \r\n",get_flowvalue());
-				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 5);
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
 			} break;
 			case INIT_TEMPERATURE:
@@ -219,7 +247,7 @@ void sensor_measurement()
 				lcd_write_string("Water temperature\r\n");
 				init_temp_sensor();
 				current_task = GET_TEMPERATURE;
-				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 5);
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
 			} break;
 			case GET_TEMPERATURE:
@@ -234,7 +262,15 @@ void sensor_measurement()
 			case PH:
 			{
 				lcd_write_string("PH quality \r\n");
+				current_task = ACC;
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
+
+			} break;
+			case ACC:
+			{
+				lcd_write_string("ACC \r\n");
 				current_task = GET_DATA_SEND;
+				get_acc_data();
 				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
 			} break;
@@ -243,17 +279,18 @@ void sensor_measurement()
 				lcd_write_string("Collect all data \r\n");
 				init_measurement_structure();
 				lcd_write_string("data send! \r\n");
-				current_task = GPS_DATA;
-				lcd_clear();
-				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 5);
+				current_task = SLEEP;
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 1);
 
 
 			} break;
 			//TODO: add case for waterdetection
 			case SLEEP:
 			{
-
-
+				lcd_write_string("SLEEP MODE \r\n");
+				current_task = WAKEUP;
+				hw_enter_lowpower_mode(1);
+				timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 5);
 			} break;
 	}
 }
@@ -263,11 +300,35 @@ void hourly_measurement()
 	lcd_write_string("Execute cycle! \r\n");
 	timer_post_task_delay(&sensor_measurement, TIMER_TICKS_PER_SEC * 10);
 }
+void read_acc()
+{
+	//uint8_t test = accelerometer_get_register(LIS3DH_WHO_AM_I);
+	//lcd_write_string("Who am i : %d \r\n",accelerometer_get_register(LIS3DH_WHO_AM_I));
+
+	//accelerometer_get_position();
+	axes_data_t frame;
+	accelerometer_read(&frame);
+	//lcd_write_string("Position : %d \r\n",accelerometer_get_position());
+	lcd_write_string("X : %d \r\n",frame.AXIS_X/180);
+	lcd_write_string("Y : %d \r\n",frame.AXIS_Y/180);
+	//lcd_write_string("Z : %d \r\n",frame.AXIS_Z);
+
+	timer_post_task_delay(&read_acc, TIMER_TICKS_PER_SEC * 1);
+}
 
 void bootstrap()
 {
 	init_gps();
 	set_send_method();
+	acc_start();
+	if(accelerometer_enable_axis(true,true,false))
+	{
+		lcd_write_string("Axiss success \n\r");
+	}
+	if(accelerometer_set_threshold(1,true,true,true,true,true,true))
+	{
+		lcd_write_string("Treshold set success \n\r");
+	}
 	sched_register_task(sensor_measurement);
 	sensor_measurement();
 }

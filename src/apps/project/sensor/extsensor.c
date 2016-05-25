@@ -30,17 +30,17 @@
 #include "../lora/IM880A_RadioInterface.h"
 
 uint8_t flow_frequency;
-int flow;
-int temp;
+uint8_t temp;
+uint8_t flow;
 int waterDetect = 0;
 
 void stop_pump();
 void get_flow_meter_value();
 void start_pump();
-void set_flowvalue(int new_flowvalue);
+void set_flowvalue(uint8_t new_flowvalue);
 int get_flowvalue();
 void set_tempvalue();
-int get_tempvalue();
+uint8_t get_tempvalue();
 void init_temp_sensor();
 void init_water_detection();
 void water_detected();
@@ -58,10 +58,13 @@ void start_pump()
 	hw_gpio_set(C2);
 
 	//initialize flow meter
-	hw_gpio_configure_pin(C0, true, gpioModeInput, 0);
+	hw_gpio_configure_pin(C8, true, gpioModeInput, 0);
 	error_t err;
-	err = hw_gpio_configure_interrupt(C0,counter_flow,GPIO_RISING_EDGE);assert(err == SUCCESS);
-	hw_gpio_enable_interrupt(C0);
+	err = hw_gpio_configure_interrupt(C8,counter_flow,GPIO_RISING_EDGE);assert(err == SUCCESS);
+	hw_gpio_enable_interrupt(C8);
+	if(!sched_is_scheduled(&counter_flow))
+		sched_post_task(&counter_flow);
+
 }
 
 void stop_pump()
@@ -74,7 +77,7 @@ void stop_pump()
 void get_flow_meter_value()
 {
 	uint8_t send_data[1];
-	set_flowvalue(flow_frequency / 7.5);
+	set_flowvalue(flow_frequency);
 	flow_frequency = 0;
 }
 
@@ -88,12 +91,13 @@ void init_temp_sensor()
 uint32_t get_temp_sensor_value()
 {
 	uint32_t tempData_temperature = adc_read_single();
-	tempData_temperature = (((tempData_temperature*1250)/4096)-500)/10; //TODO / fix damn values sensor!!!!
+	tempData_temperature = (((tempData_temperature*1250)/4096)-500)/25; //TODO / fix damn values sensor!!!!
+	//tempData_temperature = ((tempData_temperature/4096)-0.5)*100; //TODO / fix damn values sensor!!!!
 	set_tempvalue(tempData_temperature);
 	return tempData_temperature;
 }
 
-void set_flowvalue(int new_flowvalue){
+void set_flowvalue(uint8_t new_flowvalue){
 	flow = new_flowvalue;
 }
 
@@ -106,7 +110,7 @@ void set_tempvalue(int new_temp)
 	temp = new_temp;
 }
 
-int get_tempvalue()
+uint8_t get_tempvalue()
 {
 	return temp;
 }
