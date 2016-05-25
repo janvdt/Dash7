@@ -10,11 +10,9 @@ IMEC pH Sensor Lib
  * /brief Returns the external temperature of the sensor
  */
 
- void ADCConfig();
- void init_pH();
- void init_Cl();
- uint32_t get_pH_value();
- uint32_t get_Cl_value();
-
-
+ __LINK_C void ADCConfig();
+ __LINK_C void init_pH();
+ //void init_Cl();
+ __LINK_C uint32_t get_pH_value();
+ //uint32_t get_Cl_value();
 
